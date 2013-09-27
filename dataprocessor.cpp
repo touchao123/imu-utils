@@ -3,6 +3,7 @@
 #include <QVector3D>
 #include <QDebug>
 #include <QSettings>
+#include <math.h>
 
 #include "dataprocessor.h"
 
@@ -12,15 +13,37 @@ DataProcessor::DataProcessor(QObject *parent) :
     QObject(parent)
 {
     loadCalibrationParameters();
-    // calibdata to json
-    connect(this,SIGNAL(calibDataReady(QVector3D,QVector3D,QVector3D)),this,SLOT(processDataToJson(QVector3D,QVector3D,QVector3D)));
+    m_kalmanX = new KalmanFilter(this);
 
 
+    connect(this,SIGNAL(calibratedDataReady(QVector3D,QVector3D,QVector3D,int)),this,SLOT(serializeSensorDataToJson(QVector3D,QVector3D,QVector3D,int)));
 
 }
 
+// this method gets the rawdata from the sensor, compensates sensorerrors, filter the data and calculates the angles...
+void DataProcessor::processData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt)
+{
+    // ==============================================================================
+    // first need to compensate the sensorerrors by using the calibrationdata...
+    calibrateData(accData,gyroData,magData,dt);
+    emit calibratedDataReady(m_acc,m_gyr,m_mag,dt);
+
+    // ==============================================================================
+    // now we need to filter the noise using kalman filter...
+    filterData();
+
+
+    // ==============================================================================
+    // now we can calculate the roll pitch and yaw angles...
+    serializeAllData(m_acc,m_gyr,m_mag,calculateAngles()* 180 / M_PI,m_dt);
+
+}
+
+
 bool DataProcessor::loadCalibrationParameters()
 {
+    // TODO: check if data is ok  .toInt(&ok); when not return false and exit(1)
+
     // load all calibration parameters...
     QSettings settings("imu-utils");
     settings.beginGroup("Acc_calibration");
@@ -72,31 +95,78 @@ bool DataProcessor::loadCalibrationParameters()
     return true;
 }
 
-void DataProcessor::calculateCalibration(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData)
+void DataProcessor::calibrateData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt)
 {
+    // compensating  the data using the values from
     QVector3D accVector;
     QVector3D magVector;
     QVector3D gyrVector;
-
-    // correct the acceleration vector depending
+    // compensate the acceleration vector (so the vector has the same length in both directions)
     accVector.setX((accData.x() - acc_x_offset) - acc_x_scale);
     accVector.setY((accData.y() - acc_y_offset) - acc_y_scale);
     accVector.setZ((accData.z() - acc_z_offset) - acc_z_scale);
 
-    // correct the magnetometer vector depending
+    // compensate the magnetometer vector (so the vector has the same length in both directions)
     magVector.setX((magData.x() - mag_x_offset) - mag_x_scale);
     magVector.setY((magData.y() - mag_y_offset) - mag_y_scale);
     magVector.setZ((magData.z() - mag_z_offset) - mag_z_scale);
 
-    // compensate the gyroscop vector
+    // compensate the gyroscop vector (bring it to 0 when not moving)
     gyrVector.setX(gyroData.x() - gyr_x_offset);
     gyrVector.setY(gyroData.y() - gyr_y_offset);
     gyrVector.setZ(gyroData.z() - gyr_z_offset);
 
-    emit calibDataReady(accVector.normalized(),gyrVector,magVector.normalized());
+    // save normalized acc - mag vector, and the zeroed gyr vector and the dt fpr this data
+    m_acc = accVector.normalized();
+    m_gyr = gyrVector;
+    m_mag = magVector.normalized();
+    m_dt = dt;
+
 }
 
-void DataProcessor::processDataToJson(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData)
+void DataProcessor::filterData()
+{
+    
+    
+}
+
+QVector3D DataProcessor::calculateAngles()
+{
+    float roll = 0;
+    float pitch = 0;
+    float yaw = 0;
+
+    // roll
+    QVector3D tmp1 = QVector3D::crossProduct(m_acc,QVector3D(1,0,0));
+    QVector3D tmp2 = QVector3D::crossProduct(QVector3D(1,0,0),tmp1);
+    roll = atan2(tmp2.y(),tmp2.z());
+
+    // pitch
+    pitch = -atan2(m_acc.x(), sqrt( pow(m_acc.y(),2) + pow(m_acc.z(),2)));
+
+    // yaw
+    float mag_x;
+    float mag_y;
+    float cos_roll = cos(roll);
+    float sin_roll = sin(roll);
+    float cos_pitch = cos(pitch);
+    float sin_pitch = sin(pitch);
+
+    mag_x = (m_mag.x() * cos_pitch) + (m_mag.y() * sin_roll * sin_pitch) + (m_mag.z() * cos_roll * sin_pitch);
+    mag_y = m_mag.y() * cos_roll - m_mag.z() * sin_roll;
+
+    yaw = atan2(-mag_y,mag_x);
+
+    QVector3D angles;
+    angles.setX(roll);
+    angles.setY(pitch);
+    angles.setZ(yaw);
+
+    //qDebug() << "angles " << angles * 180 / M_PI;
+    return angles;
+}
+
+void DataProcessor::serializeAllData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const QVector3D &angles, const int &dt)
 {
     QVariantMap message;
 
@@ -115,12 +185,18 @@ void DataProcessor::processDataToJson(const QVector3D &accData, const QVector3D 
     magMap.insert("y",magData.y());
     magMap.insert("z",magData.z());
 
+    QVariantMap angleMap;
+    angleMap.insert("roll",angles.x());
+    angleMap.insert("pitch",angles.y());
+    angleMap.insert("yaw",angles.z());
+
     message.insert("acc",accMap);
     message.insert("gyr",gyroMap);
     message.insert("mag",magMap);
+    message.insert("angles",angleMap);
+    message.insert("dt",dt);
 
     QByteArray data = QJsonDocument::fromVariant(message).toJson();
-    //qDebug() << data;
     data.append("\n");
 
     emit dataTcpReady(data);

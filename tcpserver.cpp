@@ -22,7 +22,7 @@ void TcpServer::newClientConnected()
     // got a new client connected
     QTcpServer *server = qobject_cast<QTcpServer*>(sender());
     QTcpSocket *newConnection = server->nextPendingConnection();
-    qDebug() << "server -> new client connected:" << newConnection->peerAddress().toString();
+    qDebug() << "\nserver -> new client connected:" << newConnection->peerAddress().toString();
 
     // append the new client to the client list
     m_clientList.append(newConnection);
@@ -51,7 +51,7 @@ void TcpServer::readPackage()
 void TcpServer::clientDisconnected()
 {
     QTcpSocket *client = qobject_cast<QTcpSocket*>(sender());
-    qDebug() << "server -> client disconnected:" << client->peerAddress().toString();
+    qDebug() << "\nserver -> client disconnected:" << client->peerAddress().toString();
 }
 
 bool TcpServer::startServer()

@@ -20,6 +20,8 @@ public:
 private:
     QString m_deviceFile;
     QTimer *m_timer;
+    QTime *time;
+
     int m_delay;
     float m_frequency;
     int m_device;
@@ -39,7 +41,7 @@ public slots:
     void measure();
 
 signals:
-    void sensorDataAvailable(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData);
+    void sensorDataAvailable(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
 };
 
 #endif // IMUSENSOR_H

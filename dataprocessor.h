@@ -4,13 +4,24 @@
 #include <QObject>
 #include <QVector3D>
 
+#include <kalmanfilter.h>
+
 class DataProcessor : public QObject
 {
     Q_OBJECT
 public:
     explicit DataProcessor(QObject *parent = 0);
 
+
+
 private:
+    // loads the saved calibration parameters from ~/.config/imu-utils.conf
+    bool loadCalibrationParameters();
+    void calibrateData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt);
+    void filterData();
+    QVector3D calculateAngles();
+
+
     // Sensor calibration scale and offset values
     float acc_x_offset;
     float acc_y_offset;
@@ -30,16 +41,33 @@ private:
     float gyr_y_offset;
     float gyr_z_offset;
 
-    bool loadCalibrationParameters();
+    // calibrated data
+    QVector3D m_acc;
+    QVector3D m_gyr;
+    QVector3D m_mag;
+    int m_dt;
+    
+    // filtered data
+    QVector3D m_accFinal;
+    QVector3D m_gyrFinal;
+    QVector3D m_magFinal;
+
+    KalmanFilter *m_kalmanX;
+    KalmanFilter *m_kalmanY;
+
+    // angles
+    float m_roll;
+    float m_pitch;
+    float m_yaw;
 
 signals:
     void dataTcpReady(const QByteArray &data);
-    void calibDataReady(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData);
+    void calibratedDataReady(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
+    void anglesReady(const QVector3D & angles);
 
 public slots:
-    void calculateCalibration(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData);
-    void processDataToJson(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData);
-
+    void processData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
+    void serializeAllData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const QVector3D &angles, const int &dt);
 };
 
 #endif // DATAPROCESSOR_H

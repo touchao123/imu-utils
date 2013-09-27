@@ -1,6 +1,7 @@
 #include <QDebug>
 #include <QtGui/QVector3D>
 #include <QString>
+#include <QTime>
 #include <stdlib.h>
 #include <unistd.h>
 #include <linux/i2c-dev.h>
@@ -12,18 +13,17 @@
 #include "imusensor.h"
 
 // Accelerometer Register's [ADXL345]
-#define ACC_ADDRESS             0x53    //Address on I2C port
-#define ACC_DEVICE_ID           0x00    //Power Control Register
-#define ACC_BW_RATE             0x2C    //Data rate and power mode control.
-#define ACC_POWER_CTL           0x2D    //Power Control Register
+#define ACC_ADDRESS             0x53    // Address on I2C port
+#define ACC_DEVICE_ID           0x00    // Power Control Register
+#define ACC_BW_RATE             0x2C    // Data rate and power mode control.
+#define ACC_POWER_CTL           0x2D    // Power Control Register
 #define ACC_DATA_FORMAT         0x31
-#define ACC_DATAX0              0x32    //X-Axis Data 0
-#define ACC_DATAX1              0x33    //X-Axis Data 1
-#define ACC_DATAY0              0x34    //Y-Axis Data 0
-#define ACC_DATAY1              0x35    //Y-Axis Data 1
-#define ACC_DATAZ0              0x36    //Z-Axis Data 0
-#define ACC_DATAZ1              0x37    //Z-Axis Data 1
-#define ACC_PWRCTL_MEASURE      0x08    //Measure mode
+#define ACC_DATAX0              0x32    // X-Axis Data 0
+#define ACC_DATAX1              0x33    // X-Axis Data 1
+#define ACC_DATAY0              0x34    // Y-Axis Data 0
+#define ACC_DATAY1              0x35    // Y-Axis Data 1
+#define ACC_DATAZ0              0x36    // Z-Axis Data 0
+#define ACC_DATAZ1              0x37    // Z-Axis Data 1
 
 // Gyroscope Register's [ITG3200]
 #define GYRO_ADDRESS            0x68    // R    Address on I2C port
@@ -31,19 +31,16 @@
 #define GYRO_SMPLRT_DIV         0x15    // RW   SETUP: Sample Rate Divider
 #define GYRO_DLPF_FS            0x16    // RW   SETUP: Digital Low Pass Filter/ Full Scale range
 #define GYRO_INT_CFG            0x17    // RW   Interrupt: Configuration
-#define GYRO_INT_STATUS         0x1A    // R   Interrupt: Status
-#define GYRO_DATATEMP_H         0x1B    // R   SENSOR: Temperature 2bytes
-#define GYRO_DATATEMP_L         0x1C
-#define GYRO_DATAX_H            0x1D    // R   SENSOR: Gyro X 2bytes
-#define GYRO_DATAX_L            0x1E
-#define GYRO_DATAY_H            0x1F    // R   SENSOR: Gyro y 2bytes
-#define GYRO_DATAY_L            0x20
-#define GYRO_DATAZ_H            0x21    // R   SENSOR: Gyro Z 2bytes
-#define GYRO_DATAZ_L            0x22
-#define GYRO_PWR_MGM            0x3E    // RW  Power Management
-#define GYRO_FULLSCALE          0x03
-#define GYRO_42HZ               0x03
-
+#define GYRO_INT_STATUS         0x1A    // R    Interrupt: Status
+#define GYRO_DATATEMP_H         0x1B    // R    SENSOR: Temperature 2bytes
+#define GYRO_DATATEMP_L         0x1C    // R
+#define GYRO_DATAX_H            0x1D    // R    SENSOR: Gyro X 2bytes
+#define GYRO_DATAX_L            0x1E    // R
+#define GYRO_DATAY_H            0x1F    // R    SENSOR: Gyro y 2bytes
+#define GYRO_DATAY_L            0x20    // R
+#define GYRO_DATAZ_H            0x21    // R    SENSOR: Gyro Z 2bytes
+#define GYRO_DATAZ_L            0x22    // R
+#define GYRO_PWR_MGM            0x3E    // RW   Power Management
 
 // Magnetometer Register's [HMC5883L]
 #define MAG_ADDRESS             0x1e    // R
@@ -67,6 +64,8 @@ ImuSensor::ImuSensor(QString deviceFile, int delay, QObject *parent) :
 {
     m_device = -1;
     m_frequency = (float)1000/m_delay;
+
+    time = new QTime();
     m_timer = new QTimer(this);
     m_timer->setInterval(m_delay);
     init();
@@ -156,6 +155,7 @@ QVector3D ImuSensor::readAcc()
         qDebug() << "ERROR: could not read Acc data";
         return vector;
     }
+    // register bytes -> [X0,X1,Y0,Y1,Z0,Z1]
     acc_data[0] = (((int) bytes[3]) << 8) | bytes[2];  // (internal sensor y axis);
     acc_data[1] = (((int) bytes[1]) << 8) | bytes[0];  // (internal sensor x axis);
     acc_data[2] = (((int) bytes[5]) << 8) | bytes[4];  // (internal sensor z axis);
@@ -183,6 +183,7 @@ QVector3D ImuSensor::readGyr()
         qDebug() << "ERROR: could not read Gyr data";
         return vector;
     }
+    // register bytes -> [X1,X0,Y1,Y0,Z1,Z0]
     gyro_data[0] = ((((int) bytes[2]) << 8) | bytes[3]); // (internal sensor -y axis)
     gyro_data[1] = ((((int) bytes[0]) << 8) | bytes[1]); // (internal sensor -x axis)
     gyro_data[2] = ((((int) bytes[4]) << 8) | bytes[5]); // (internal sensor -z axis)
@@ -210,10 +211,11 @@ QVector3D ImuSensor::readMag()
         qDebug() << "ERROR: could not read Gyr data";
         return vector;
     }
+    // register bytes -> [X1,X0,Z1,Z0,Y1,Y0]
     // Attention -> register bytes are: xxzzyy -> mag_data[x,z,y]
-    mag_data[0] = (((int) bytes[0]) << 8) | bytes[1]; //(internal sensor x axis)
-    mag_data[1] = (((int) bytes[4]) << 8) | bytes[5]; //(internal sensor y axis)
-    mag_data[2] = (((int) bytes[2]) << 8) | bytes[3]; //(internal sensor z axis)
+    mag_data[0] = (((int) bytes[0]) << 8) | bytes[1];
+    mag_data[1] = (((int) bytes[4]) << 8) | bytes[5];
+    mag_data[2] = (((int) bytes[2]) << 8) | bytes[3];
 
     vector.setX(float(toSignedInt(mag_data[0],16)));
     vector.setY(float(toSignedInt(mag_data[1],16)));
@@ -344,6 +346,7 @@ int ImuSensor::toSignedInt(unsigned int value, int bitLength)
 void ImuSensor::enableSensor()
 {
     m_timer->start();
+    time->start();
     qDebug() << "--------------------------------------------";
     qDebug() << "measurement frequency:" << m_frequency << "[Hz]" << "  -> (" << m_delay << " ms)";
     qDebug() << "Start measuring....";
@@ -358,8 +361,15 @@ void ImuSensor::disableSensor()
 
 void ImuSensor::measure()
 {
-    // readGyrTemp();
-    emit sensorDataAvailable(readAcc(),readGyr(),readMag());
+    QVector3D acc = readAcc();
+    QVector3D gyr = readGyr();
+    QVector3D mag = readMag();
+
+    // measeure time since last restart of time;
+    int dt = time->elapsed();
+    time->restart();
+    emit sensorDataAvailable(acc,gyr,mag,dt);
+
 }
 
 

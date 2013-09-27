@@ -34,7 +34,7 @@ private:
 signals:
 
 public slots:
-    void printData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData);
+    void printData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
 };
 
 #endif // CORE_H

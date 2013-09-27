@@ -17,14 +17,14 @@ Core::Core(QStringList args, QObject *parent) :
     setupTcpServer();
 
     // global connections
-    connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D)),m_dataProcessor,SLOT(calculateCalibration(QVector3D,QVector3D,QVector3D)));
+    connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D,int)),m_dataProcessor,SLOT(processData(QVector3D,QVector3D,QVector3D,int)));
 
     // user specifys which data get printed to the console
     if(m_args.contains("-vr") || m_args.contains("--verboseRaw")){
-        connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D)),this,SLOT(printData(QVector3D,QVector3D,QVector3D)));
+        connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D,int)),this,SLOT(printData(QVector3D,QVector3D,QVector3D,int)));
     }
     if(m_args.contains("-vc") || m_args.contains("--verboseCal")){
-        connect(m_dataProcessor,SIGNAL(calibDataReady(QVector3D,QVector3D,QVector3D)),this,SLOT(printData(QVector3D,QVector3D,QVector3D)));
+        connect(m_dataProcessor,SIGNAL(calibratedDataReady(QVector3D,QVector3D,QVector3D,int)),this,SLOT(printData(QVector3D,QVector3D,QVector3D,int)));
     }
 
     m_sensor->enableSensor();
@@ -180,12 +180,13 @@ void Core::setupTcpServer()
     }
 }
 
-void Core::printData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData)
+void Core::printData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt)
 {
-    printf("\r                                                                                             ");
-    printf("\rAcc = [ %0.2f | %0.2f | %0.2f ]",accData.x(), accData.y(),accData.z());
-    printf("\tGyro = [ %0.2f | %0.2f | %0.2f ]",gyroData.x(),gyroData.y(),gyroData.z());
-    printf("\tMag = [ %0.2f | %0.2f | %0.2f ]",magData.x(),magData.y(),magData.z());
+    printf("\r                                                                                                                                                         ");
+    printf("\r  Acc = [ %0.2f | %0.2f | %0.2f ]",accData.x(), accData.y(),accData.z());
+    printf("    Gyro = [ %0.2f | %0.2f | %0.2f ]",gyroData.x(),gyroData.y(),gyroData.z());
+    printf("    Mag = [ %0.2f | %0.2f | %0.2f ]",magData.x(),magData.y(),magData.z());
+    printf("    dt = %i\r",dt);
     fflush(stdout);
 
 }
