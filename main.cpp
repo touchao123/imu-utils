@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
         qDebug() << "   -h,     --help              print this help message";
         qDebug() << "   -vr,                        print sensor raw data to console";
         qDebug() << "   -vc,                        print calibrated sensor data to console";
+        qDebug() << "   -va,                        print roll, pitch yaw angles to console";
         qDebug() << "   -d,     --device            specify the I2C-device where the sensor is connected";
         qDebug() << "                               default = /dev/i2c-1 on the Raspberry Pi";
         qDebug() << "   -ca,                        calibrate the acceleration sensor";

@@ -20,11 +20,14 @@ Core::Core(QStringList args, QObject *parent) :
     connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D,int)),m_dataProcessor,SLOT(processData(QVector3D,QVector3D,QVector3D,int)));
 
     // user specifys which data get printed to the console
-    if(m_args.contains("-vr") || m_args.contains("--verboseRaw")){
+    if(m_args.contains("-vr") && !m_args.contains("-vc") && !m_args.contains("-va")){
         connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D,int)),this,SLOT(printData(QVector3D,QVector3D,QVector3D,int)));
     }
-    if(m_args.contains("-vc") || m_args.contains("--verboseCal")){
+    if(m_args.contains("-vc") && !m_args.contains("-vr") && !m_args.contains("-va")){
         connect(m_dataProcessor,SIGNAL(calibratedDataReady(QVector3D,QVector3D,QVector3D,int)),this,SLOT(printData(QVector3D,QVector3D,QVector3D,int)));
+    }
+    if(m_args.contains("-va") && !m_args.contains("-vc") && !m_args.contains("-vr")){
+        connect(m_dataProcessor,SIGNAL(anglesReady(QVector3D)),this,SLOT(printAngles(QVector3D)));
     }
 
     m_sensor->enableSensor();
@@ -70,7 +73,7 @@ void Core::calibration()
 
     // check if user wants to calibrate magnetometer sensor
     if((m_args.contains("-cm"))){
-        if(m_args.contains("-v") || m_args.contains("--verbose")){
+        if(m_args.contains("-vc") || m_args.contains("-vr") || m_args.contains("-va")){
             qDebug() << "verbose parameter not allowed in calibration";
             exit(1);
         }
@@ -189,4 +192,11 @@ void Core::printData(const QVector3D &accData, const QVector3D &gyroData, const 
     printf("    dt = %i\r",dt);
     fflush(stdout);
 
+}
+
+void Core::printAngles(const QVector3D &angles)
+{
+    printf("\r                                                                                                                                                         ");
+    printf("\r  Roll =  %0.2f     Pitch = %0.2f     Yaw = %0.2f",angles.x(), angles.y(),angles.z());
+    fflush(stdout);
 }

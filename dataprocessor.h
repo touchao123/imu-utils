@@ -3,8 +3,14 @@
 
 #include <QObject>
 #include <QVector3D>
+#include <QMatrix3x3>
 
-#include <kalmanfilter.h>
+
+// DCM parameters
+#define Kp_ROLLPITCH 0.02f
+#define Ki_ROLLPITCH 0.00002f
+#define Kp_YAW 1.2f
+#define Ki_YAW 0.00002f
 
 class DataProcessor : public QObject
 {
@@ -18,8 +24,9 @@ private:
     // loads the saved calibration parameters from ~/.config/imu-utils.conf
     bool loadCalibrationParameters();
     void calibrateData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt);
-    void filterData();
-    QVector3D calculateAngles();
+    void complementaryFilter();
+    float toDeg(float rad);
+    float toRad(float deg);
 
 
     // Sensor calibration scale and offset values
@@ -47,15 +54,15 @@ private:
     QVector3D m_mag;
     int m_dt;
     
-    // filtered data
-    QVector3D m_accFinal;
-    QVector3D m_gyrFinal;
-    QVector3D m_magFinal;
+    // complementary filter
+    float m_accXangle;
+    float m_accYangle;
 
-    KalmanFilter *m_kalmanX;
-    KalmanFilter *m_kalmanY;
+    float m_gyrXangle;
+    float m_gyrYangle;
 
     // angles
+    QVector3D m_angles;
     float m_roll;
     float m_pitch;
     float m_yaw;

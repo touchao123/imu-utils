@@ -163,7 +163,7 @@ QVector3D ImuSensor::readAcc()
     vector.setX(float(toSignedInt(acc_data[0],16)));
     vector.setY(float(toSignedInt(acc_data[1],16)));
     vector.setZ(float(toSignedInt(acc_data[2],16)));
-    //qDebug() << "Acc data: x= " << acc_data[0] << "y= " << acc_data[1] << "z= " <<  acc_data[2];
+    //qDebug() << "Acc data: x= " << vector.x() << "y= " << vector.y() << "z= " <<  vector.z();
     return vector;
 }
 
@@ -285,7 +285,8 @@ void ImuSensor::initGyr()
 
     // Select full-scale range of the gyro sensors
     // set DLPF and Fullscale -> FS_SEL = 3, DLPF_CFG = 3 = 42 Hz = 11011 = 0x1B
-    if(!writeI2C(GYRO_ADDRESS,GYRO_DLPF_FS,0x1B)){
+    // set DLPF and Fullscale -> FS_SEL = 3, DLPF_CFG = 4 = 20 Hz = 11100 = 0x1B
+    if(!writeI2C(GYRO_ADDRESS,GYRO_DLPF_FS,0x1C)){
         qDebug() << "ERROR: could not set DLPF-FS of GYRO";
         return;
     }

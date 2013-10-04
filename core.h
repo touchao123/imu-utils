@@ -35,6 +35,7 @@ signals:
 
 public slots:
     void printData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
+    void printAngles(const QVector3D &angles);
 };
 
 #endif // CORE_H
