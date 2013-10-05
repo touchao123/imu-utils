@@ -285,8 +285,8 @@ void ImuSensor::initGyr()
 
     // Select full-scale range of the gyro sensors
     // set DLPF and Fullscale -> FS_SEL = 3, DLPF_CFG = 3 = 42 Hz = 11011 = 0x1B
-    // set DLPF and Fullscale -> FS_SEL = 3, DLPF_CFG = 4 = 20 Hz = 11100 = 0x1B
-    if(!writeI2C(GYRO_ADDRESS,GYRO_DLPF_FS,0x1C)){
+    // set DLPF and Fullscale -> FS_SEL = 3, DLPF_CFG = 4 = 20 Hz = 11100 = 0x1C
+    if(!writeI2C(GYRO_ADDRESS,GYRO_DLPF_FS,0x1B)){
         qDebug() << "ERROR: could not set DLPF-FS of GYRO";
         return;
     }
@@ -295,11 +295,11 @@ void ImuSensor::initGyr()
     // Set sample rate
     // rate = 1kHz (depending in FS_SEL) / (divider+1)
     // rate = 1kHz/(9+1) = 100Hz    (devicer can be 0-255)
-    if(!writeI2C(GYRO_ADDRESS,GYRO_SMPLRT_DIV,0x09)){
-        qDebug() << "ERROR: could not set rate devider of GYRO";
-        return;
-    }
-    usleep(50000);
+    //    if(!writeI2C(GYRO_ADDRESS,GYRO_SMPLRT_DIV,0x09)){
+    //        qDebug() << "ERROR: could not set rate devider of GYRO";
+    //        return;
+    //    }
+    //    usleep(50000);
 
     // Set clock to PLL with z gyro reference
     if(!writeI2C(GYRO_ADDRESS,GYRO_PWR_MGM,0x00)){

@@ -16,6 +16,7 @@ DataProcessor::DataProcessor(QObject *parent) :
 {
     m_gyrXangle = 0;
     m_gyrYangle = 0;
+    m_dcmFilter = new DcmFilter(this);
 
     loadCalibrationParameters();
 }
@@ -30,11 +31,12 @@ void DataProcessor::processData(const QVector3D &accData, const QVector3D &gyroD
 
     // ==============================================================================
     // now we can calculate the roll pitch angles...
-    complementaryFilter();
-    emit anglesReady(m_angles* 180/M_PI);
+    //complementaryFilter();
+    m_angles = m_dcmFilter->updateData(m_acc,m_gyr,m_mag,dt);
+    emit anglesReady(m_angles);
 
     // send all data in JSON format to TCp Server
-    serializeAllData(m_acc,m_gyr,m_mag,m_angles* 180/M_PI,m_dt);
+    serializeAllData(m_acc,m_gyr,m_mag,m_angles * 180 / M_PI,dt);
 
 }
 
@@ -116,9 +118,9 @@ void DataProcessor::calibrateData(const QVector3D &accData, const QVector3D &gyr
     gyrVector.setZ(gyroData.z() - gyr_z_offset);
 
     // save normalized acc - mag vector, and the zeroed gyr vector and the dt fpr this data
-    m_acc = accVector.normalized();
+    m_acc = accVector;
     m_gyr = gyrVector;
-    m_mag = magVector.normalized();
+    m_mag = magVector;
     m_dt = dt;
 
 }
@@ -141,11 +143,11 @@ void DataProcessor::complementaryFilter()
 
     // Low pass filtering
     // x...roll
-    //m_roll = m_accXangle;
-    m_roll = (alpha * (m_roll + m_gyrXangle)) + ((1-alpha)*m_accXangle);
+    m_roll = m_accXangle;
+    //m_roll = (alpha * (m_roll + m_gyrXangle)) + ((1-alpha)*m_accXangle);
     // y...pitch
-    //m_pitch = m_accYangle;
-    m_pitch = (alpha * (m_pitch + m_gyrYangle)) + ((1-alpha)*m_accYangle);
+    m_pitch = m_accYangle;
+    //m_pitch = (alpha * (m_pitch + m_gyrYangle)) + ((1-alpha)*m_accYangle);
 
     // z...yaw -> magnetic heading ...
     float mag_x;

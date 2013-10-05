@@ -21,7 +21,7 @@ SOURCES += main.cpp \
     tcpserver.cpp \
     dataprocessor.cpp \
     imusensorcalibrator.cpp \
-    kalmanfilter.cpp
+    dcmfilter.cpp
 
 HEADERS += \
     core.h \
@@ -29,4 +29,4 @@ HEADERS += \
     tcpserver.h \
     dataprocessor.h \
     imusensorcalibrator.h \
-    kalmanfilter.h
+    dcmfilter.h

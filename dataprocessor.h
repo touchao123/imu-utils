@@ -3,14 +3,7 @@
 
 #include <QObject>
 #include <QVector3D>
-#include <QMatrix3x3>
-
-
-// DCM parameters
-#define Kp_ROLLPITCH 0.02f
-#define Ki_ROLLPITCH 0.00002f
-#define Kp_YAW 1.2f
-#define Ki_YAW 0.00002f
+#include <dcmfilter.h>
 
 class DataProcessor : public QObject
 {
@@ -66,6 +59,8 @@ private:
     float m_roll;
     float m_pitch;
     float m_yaw;
+
+    DcmFilter *m_dcmFilter;
 
 signals:
     void dataTcpReady(const QByteArray &data);
