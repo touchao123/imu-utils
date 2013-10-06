@@ -35,6 +35,7 @@ void DataProcessor::processData(const QVector3D &accData, const QVector3D &gyroD
     m_angles = m_dcmFilter->updateData(m_acc,m_gyr,m_mag,dt);
     emit anglesReady(m_angles);
 
+    // ==============================================================================
     // send all data in JSON format to TCp Server
     serializeAllData(m_acc,m_gyr,m_mag,m_angles * 180 / M_PI,dt);
 
@@ -128,16 +129,19 @@ void DataProcessor::calibrateData(const QVector3D &accData, const QVector3D &gyr
 void DataProcessor::complementaryFilter()
 {
     float gyrosensitivity = 1;
-    float alpha = 0.2;
+    float alpha = 0.5;
+
+
 
 
     // angle from acc
-    m_accXangle = (atan2(m_acc.y(),m_acc.z()) + M_PI);
-    m_accYangle = (atan2(m_acc.x(),m_acc.z()) + M_PI);
+    m_accXangle = (alpha*m_roll) + ((1-alpha)*(atan2(m_acc.y(),m_acc.z())));
+    m_accYangle = (alpha*m_pitch) + ((1-alpha)*(atan2(m_acc.x(),m_acc.z())));
+
 
     //angle from gyr
-    m_gyrXangle = ((m_gyr.x()/gyrosensitivity) * ((float)m_dt / 1000));
-    m_gyrYangle = ((m_gyr.y()/gyrosensitivity) * ((float)m_dt / 1000));
+//    m_gyrXangle = ((m_gyr.x()/gyrosensitivity) * ((float)m_dt / 1000));
+//    m_gyrYangle = ((m_gyr.y()/gyrosensitivity) * ((float)m_dt / 1000));
 
     //qDebug() << m_gyrXangle << m_gyrYangle;
 

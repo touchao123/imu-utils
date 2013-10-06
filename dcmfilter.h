@@ -5,14 +5,14 @@
 #include <QVector3D>
 
 // Gain for gyroscope (ITG-3200)
-#define GYRO_GAIN 0.06957 // Same gain on all axes 0.06957
+#define GYRO_GAIN 0.06957 // Same gain on all axes
 #define GYRO_SCALED_RAD(x) (x * TO_RAD(GYRO_GAIN)) // Calculate the scaled gyro readings in radians per second
 
 // DCM parameters
-#define Kp_ROLLPITCH 0.02f // 0.02
-#define Ki_ROLLPITCH 0.00004f //0.00002f
-#define Kp_YAW 2.0f// 1.2
-#define Ki_YAW 0.00004f // 0.00002f
+#define Kp_ROLLPITCH 0.04f
+#define Ki_ROLLPITCH 0.00002f
+#define Kp_YAW 1.2f
+#define Ki_YAW 0.00002f
 
 #define GRAVITY 256.0f // "1G reference" used for DCM filter and accelerometer calibration
 #define TO_RAD(x) (x * 0.01745329252)  // *pi/180

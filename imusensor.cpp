@@ -184,8 +184,8 @@ QVector3D ImuSensor::readGyr()
         return vector;
     }
     // register bytes -> [X1,X0,Y1,Y0,Z1,Z0]
-    gyro_data[0] = ((((int) bytes[2]) << 8) | bytes[3]); // (internal sensor -y axis)
-    gyro_data[1] = ((((int) bytes[0]) << 8) | bytes[1]); // (internal sensor -x axis)
+    gyro_data[1] = ((((int) bytes[2]) << 8) | bytes[3]); // (internal sensor -y axis)
+    gyro_data[0] = ((((int) bytes[0]) << 8) | bytes[1]); // (internal sensor -x axis)
     gyro_data[2] = ((((int) bytes[4]) << 8) | bytes[5]); // (internal sensor -z axis)
 
     vector.setX(float(toSignedInt(gyro_data[0],16)));
