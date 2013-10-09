@@ -156,9 +156,9 @@ QVector3D ImuSensor::readAcc()
         return vector;
     }
     // register bytes -> [X0,X1,Y0,Y1,Z0,Z1]
-    acc_data[0] = (((int) bytes[3]) << 8) | bytes[2];  // (internal sensor y axis);
-    acc_data[1] = (((int) bytes[1]) << 8) | bytes[0];  // (internal sensor x axis);
-    acc_data[2] = (((int) bytes[5]) << 8) | bytes[4];  // (internal sensor z axis);
+    acc_data[0] = (((int) bytes[3]) << 8) | bytes[2];  // x = y (sensor)
+    acc_data[1] = (((int) bytes[1]) << 8) | bytes[0];  // y = x (sensor)
+    acc_data[2] = (((int) bytes[5]) << 8) | bytes[4];  // z = z (sensor)
 
     vector.setX(float(toSignedInt(acc_data[0],16)));
     vector.setY(float(toSignedInt(acc_data[1],16)));
@@ -184,13 +184,13 @@ QVector3D ImuSensor::readGyr()
         return vector;
     }
     // register bytes -> [X1,X0,Y1,Y0,Z1,Z0]
-    gyro_data[1] = ((((int) bytes[2]) << 8) | bytes[3]); // (internal sensor -y axis)
-    gyro_data[0] = ((((int) bytes[0]) << 8) | bytes[1]); // (internal sensor -x axis)
-    gyro_data[2] = ((((int) bytes[4]) << 8) | bytes[5]); // (internal sensor -z axis)
+    gyro_data[0] = ((((int) bytes[2]) << 8) | bytes[3]); // x = -y (sensor)
+    gyro_data[1] = ((((int) bytes[0]) << 8) | bytes[1]); // y = -x (sensor)
+    gyro_data[2] = ((((int) bytes[4]) << 8) | bytes[5]); // z = -z (sensor)
 
-    vector.setX(float(toSignedInt(gyro_data[0],16)));
-    vector.setY(float(toSignedInt(gyro_data[1],16)));
-    vector.setZ(float(toSignedInt(gyro_data[2],16)));
+    vector.setX(float(toSignedInt(gyro_data[0],16))*(-1));
+    vector.setY(float(toSignedInt(gyro_data[1],16))*(-1));
+    vector.setZ(float(toSignedInt(gyro_data[2],16))*(-1));
     //qDebug() << "Gyro data: x= " << gyro_data[0] << "y= " << gyro_data[1] << "z= " <<  gyro_data[2];
     return vector;
 }
@@ -218,8 +218,8 @@ QVector3D ImuSensor::readMag()
     mag_data[2] = (((int) bytes[2]) << 8) | bytes[3];
 
     vector.setX(float(toSignedInt(mag_data[0],16)));
-    vector.setY(float(toSignedInt(mag_data[1],16)));
-    vector.setZ(float(toSignedInt(mag_data[2],16)));
+    vector.setY(float(toSignedInt(mag_data[1],16))*(-1));
+    vector.setZ(float(toSignedInt(mag_data[2],16))*(-1));
     return vector;
 }
 

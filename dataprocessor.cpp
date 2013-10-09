@@ -109,9 +109,9 @@ void DataProcessor::calibrateData(const QVector3D &accData, const QVector3D &gyr
     accVector.setZ((accData.z() - acc_z_offset) - acc_z_scale);
 
     // compensate the magnetometer vector (so the vector has the same length in both directions)
-    magVector.setX((magData.x() - mag_x_offset) - mag_x_scale);
-    magVector.setY((magData.y() - mag_y_offset) - mag_y_scale);
-    magVector.setZ((magData.z() - mag_z_offset) - mag_z_scale);
+    magVector.setX(((magData.x() - mag_x_offset) - mag_x_scale));
+    magVector.setY(((magData.y() - mag_y_offset) - mag_y_scale));
+    magVector.setZ(((magData.z() - mag_z_offset) - mag_z_scale));
 
     // compensate the gyroscop vector (bring it to 0 when not moving)
     gyrVector.setX(gyroData.x() - gyr_x_offset);
@@ -130,9 +130,6 @@ void DataProcessor::complementaryFilter()
 {
     float gyrosensitivity = 1;
     float alpha = 0.5;
-
-
-
 
     // angle from acc
     m_accXangle = (alpha*m_roll) + ((1-alpha)*(atan2(m_acc.y(),m_acc.z())));
