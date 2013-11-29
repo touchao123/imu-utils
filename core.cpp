@@ -21,16 +21,19 @@
 #include <QDebug>
 
 #include "core.h"
+#include <math.h>
 
-Core::Core(QStringList args, QObject *parent) :
-    m_args(args),QObject(parent)
+Core::Core(QStringList args, int argc, char **argv, QObject *parent) :
+    m_args(args),m_argc(argc),m_argv(argv),QObject(parent)
 {
-
     m_device = "/dev/i2c-1";
     m_delay = 20;
     m_port = 55555;
 
     m_dataProcessor = new DataProcessor(this);
+
+    m_rosListener = new RosOdometryListener(m_argc,m_argv);
+    m_rosListener->onInit("http://10.10.10.50:11311/","10.10.10.41");
 
     calibration();
     setupSensor();
@@ -217,6 +220,6 @@ void Core::printData(const QVector3D &accData, const QVector3D &gyroData, const 
 void Core::printAngles(const QVector3D &angles)
 {
     printf("\r                                                                                                                                                         ");
-    printf("\r  Roll =  %0.2f     Pitch = %0.2f     Yaw = %0.2f",angles.x(), angles.y(),angles.z());
+    printf("\r  Roll =  %0.2f     Pitch = %0.2f     Yaw = %0.2f",angles.x()*180/M_PI, angles.y()*180/M_PI,angles.z()*180/M_PI);
     fflush(stdout);
 }

@@ -28,23 +28,27 @@
 #include <tcpserver.h>
 #include <dataprocessor.h>
 #include <imusensorcalibrator.h>
+#include <rosodometrylistener.h>
 
 class Core : public QObject
 {
     Q_OBJECT
 public:
-    explicit Core(QStringList args,QObject *parent = 0);
+    explicit Core(QStringList args, int argc, char **argv, QObject *parent = 0);
+
+private:
+    QStringList m_args;
+    int m_argc;
+    char** m_argv;
+    QString m_device;
+    int m_delay;
+    int m_port;
 
     ImuSensor *m_sensor;
     TcpServer *m_server;
     DataProcessor *m_dataProcessor;
     ImuSensorCalibrator *m_calibrator;
-
-private:
-    QStringList m_args;
-    QString m_device;
-    int m_delay;
-    int m_port;
+    RosOdometryListener *m_rosListener;
 
     void calibration();
     void setupSensor();

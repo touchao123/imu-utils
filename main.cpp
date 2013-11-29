@@ -22,6 +22,7 @@
 #include <QStringList>
 #include <QDebug>
 #include <core.h>
+#include <rosodometrylistener.h>
 
 int main(int argc, char *argv[])
 {
@@ -74,7 +75,12 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    Core *core = new Core(arguments,0);
+//    RosOdometryListener m_rosListener(argc,argv);
+//    m_rosListener.onInit("http://10.10.10.50:11311/","10.10.10.41");
+
+    Core *core = new Core(arguments,argc,argv,0);
+
+
 
     return a.exec();
 }
