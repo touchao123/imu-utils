@@ -25,18 +25,20 @@
 #include <ros/ros.h>
 #include <string>
 #include <std_msgs/String.h>
+#include <tf/tfMessage.h>
+#include <turtlesim/Pose.h>
 
 class RosOdometryListener : public QNode
 {
 public:
     RosOdometryListener(int argc, char** argv);
-    //virtual ~Listener() {}
+    virtual ~RosOdometryListener() {}
     void run();
     void ros_comms_init();
 
 
 private:
-    void callbackFuction(const std_msgs::String::ConstPtr &msg);
+    void callbackFuction(const turtlesim::Pose::ConstPtr &msg);
     ros::Subscriber m_subscriber;
 
 };

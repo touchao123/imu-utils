@@ -52,7 +52,7 @@ bool QNode::onInit()
     ros_comms_init();
     start();
     qDebug() << "--------------------------------------------";
-    qDebug() << "ROS -> Node started.";
+    qDebug() << "ROS -> Node "<< QString::fromStdString(node_name) << "started.";
     qDebug() << "--------------------------------------------";
     return true;
 }
@@ -69,8 +69,11 @@ bool QNode::onInit(const std::string &master_url, const std::string &host_url)
         qDebug() << "--------------------------------------------";
         return false;
     }
+    // start ros
     ros::start();
     ros_comms_init();
+
+    // start thread
     start();
     qDebug() << "--------------------------------------------";
     qDebug() << "ROS -> Node " << QString::fromStdString(node_name) << "started.";
@@ -83,10 +86,21 @@ bool QNode::onInit(const std::string &master_url, const std::string &host_url)
 
 void QNode::shutdown()
 {
-//    if(ros::isStarted()) {
-//        ros::shutdown();
-//        ros::waitForShutdown();
-//    }
-//    wait();
+    if(ros::isStarted()) {
+        ros::shutdown();
+        ros::waitForShutdown();
+        terminate();
+        quit();
+        exit(0);
+
+
+    }
+    //wait();
+    ros::shutdown();
+    ros::waitForShutdown();
+    terminate();
+    quit();
+    exit(0);
+
 }
 

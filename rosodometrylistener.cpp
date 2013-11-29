@@ -22,10 +22,10 @@
 
 #include <QDebug>
 #include <ros/ros.h>
-#include <ros/header.h>
-#include <ros/message.h>
+#include <ros/time.h>
 #include <string>
 #include <std_msgs/String.h>
+#include <turtlesim/Velocity.h>
 #include <QString>
 
 RosOdometryListener::RosOdometryListener(int argc, char **argv):
@@ -42,20 +42,17 @@ void RosOdometryListener::run()
 
 void RosOdometryListener::ros_comms_init()
 {
-    std::string topic = "/rosout/rosgraph_msgs/Log";
+    std::string topic = "/turtle1/pose";
     ros::NodeHandle node;
     m_subscriber = node.subscribe(topic, 1000, &RosOdometryListener::callbackFuction, this);
     qDebug() << "ROS -> subscribet to topic" << QString::fromStdString(topic);
 }
 
-void RosOdometryListener::callbackFuction(const std_msgs::String::ConstPtr &msg)
+void RosOdometryListener::callbackFuction(const turtlesim::Pose::ConstPtr &message)
 {
-    qDebug() << "got something: " << msg;
-//    ROS_INFO("I heard: [%s]", msg->data.c_str());
-//    logging.insertRows(0,1);
-//    std::stringstream logging_msg;
-//    logging_msg << "[ INFO] [" << ros::Time::now() << "]: I heard: " << msg->data;
-//    QVariant new_row(QString(logging_msg.str().c_str()));
-//    logging.setData(logging.index(0),new_row);
-
+    qDebug() << "--------------------------------";
+    qDebug() << "turtlesim:";
+    qDebug() << "   " << message->x;
+    qDebug() << "   " << message->y;
+    qDebug() << "   " << message->theta;
 }
