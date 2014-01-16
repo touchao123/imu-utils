@@ -49,11 +49,16 @@ void DataProcessor::processData(const QVector3D &accData, const QVector3D &gyroD
     calibrateData(accData,gyroData,magData,dt);
     emit calibratedDataReady(m_acc,m_gyr,m_mag,dt);
 
+
     // ==============================================================================
     // now we can calculate the roll pitch angles...
-    //complementaryFilter();
+    QVector3D lastAngles = m_angles;
     m_angles = m_dcmFilter->updateData(m_acc,m_gyr,m_mag,dt);
-    emit anglesReady(m_angles);
+
+    //calculate velocity
+    QVector3D anglesVel = (m_angles - lastAngles) / dt;
+
+    emit anglesReady(m_angles,anglesVel);
 
     // ==============================================================================
     // send all data in JSON format to TCp Server
@@ -146,48 +151,6 @@ void DataProcessor::calibrateData(const QVector3D &accData, const QVector3D &gyr
 
 }
 
-void DataProcessor::complementaryFilter()
-{
-    float gyrosensitivity = 1;
-    float alpha = 0.5;
-
-    // angle from acc
-    m_accXangle = (alpha*m_roll) + ((1-alpha)*(atan2(m_acc.y(),m_acc.z())));
-    m_accYangle = (alpha*m_pitch) + ((1-alpha)*(atan2(m_acc.x(),m_acc.z())));
-
-
-    //angle from gyr
-//    m_gyrXangle = ((m_gyr.x()/gyrosensitivity) * ((float)m_dt / 1000));
-//    m_gyrYangle = ((m_gyr.y()/gyrosensitivity) * ((float)m_dt / 1000));
-
-    //qDebug() << m_gyrXangle << m_gyrYangle;
-
-    // Low pass filtering
-    // x...roll
-    m_roll = m_accXangle;
-    //m_roll = (alpha * (m_roll + m_gyrXangle)) + ((1-alpha)*m_accXangle);
-    // y...pitch
-    m_pitch = m_accYangle;
-    //m_pitch = (alpha * (m_pitch + m_gyrYangle)) + ((1-alpha)*m_accYangle);
-
-    // z...yaw -> magnetic heading ...
-    float mag_x;
-    float mag_y;
-    float cos_roll = cos(m_roll);
-    float sin_roll = sin(m_roll);
-    float cos_pitch = cos(m_pitch);
-    float sin_pitch = sin(m_pitch);
-
-    mag_x = (m_mag.x() * cos_pitch) + (m_mag.y() * sin_roll * sin_pitch) + (m_mag.z() * cos_roll * sin_pitch);
-    mag_y = m_mag.y() * cos_roll - m_mag.z() * sin_roll;
-
-    m_yaw = atan2(mag_y,mag_x);
-
-    m_angles.setX(m_roll);
-    m_angles.setY(m_pitch);
-    m_angles.setZ(m_yaw);
-
-}
 
 float DataProcessor::toDeg(float rad)
 {

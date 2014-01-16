@@ -23,18 +23,20 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QThread>
 
 #include <imusensor.h>
 #include <tcpserver.h>
 #include <dataprocessor.h>
 #include <imusensorcalibrator.h>
-#include <rosodometrylistener.h>
+#include <rosnode.h>
 
 class Core : public QObject
 {
     Q_OBJECT
 public:
     explicit Core(QStringList args, int argc, char **argv, QObject *parent = 0);
+    ~Core();
 
 private:
     QStringList m_args;
@@ -48,18 +50,23 @@ private:
     TcpServer *m_server;
     DataProcessor *m_dataProcessor;
     ImuSensorCalibrator *m_calibrator;
-    RosOdometryListener *m_rosListener;
+
+    QThread *m_rosThread;
+    RosNode *m_rosNode;
 
     void calibration();
     void setupSensor();
     void setupTcpServer();
+    void setupRos();
 
+private slots:
+    void rosFinished();
 
 signals:
 
 public slots:
     void printData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
-    void printAngles(const QVector3D &angles);
+    void printAngles(const QVector3D &angles, const QVector3D &anglesVel);
 };
 
 #endif // CORE_H

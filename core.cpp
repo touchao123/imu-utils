@@ -32,12 +32,12 @@ Core::Core(QStringList args, int argc, char **argv, QObject *parent) :
 
     m_dataProcessor = new DataProcessor(this);
 
-    m_rosListener = new RosOdometryListener(m_argc,m_argv);
-    m_rosListener->onInit("http://10.10.10.50:11311/","10.10.10.41");
 
     calibration();
     setupSensor();
     setupTcpServer();
+
+
 
     // global connections
     connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D,int)),m_dataProcessor,SLOT(processData(QVector3D,QVector3D,QVector3D,int)));
@@ -50,10 +50,18 @@ Core::Core(QStringList args, int argc, char **argv, QObject *parent) :
         connect(m_dataProcessor,SIGNAL(calibratedDataReady(QVector3D,QVector3D,QVector3D,int)),this,SLOT(printData(QVector3D,QVector3D,QVector3D,int)));
     }
     if(m_args.contains("-va") && !m_args.contains("-vc") && !m_args.contains("-vr")){
-        connect(m_dataProcessor,SIGNAL(anglesReady(QVector3D)),this,SLOT(printAngles(QVector3D)));
+        connect(m_dataProcessor,SIGNAL(anglesReady(QVector3D,QVector3D)),this,SLOT(printAngles(QVector3D,QVector3D)));
     }
 
     m_sensor->enableSensor();
+    setupRos();
+
+}
+
+Core::~Core()
+{
+    m_rosThread->quit();
+    m_rosThread->wait();
 }
 
 void Core::calibration()
@@ -206,6 +214,23 @@ void Core::setupTcpServer()
     }
 }
 
+void Core::setupRos()
+{
+    //check if the user wants enable ROS support
+    if(m_args.contains("-r") || m_args.contains("--ros")){
+        m_rosNode = new RosNode(this,m_argc,m_argv,"imu_utils");
+        m_rosNode->start();
+        connect (m_dataProcessor,SIGNAL(anglesReady(QVector3D,QVector3D)),m_rosNode,SLOT(publishData(QVector3D,QVector3D)));
+        connect(m_rosNode,SIGNAL(finished()),this,SLOT(rosFinished()));
+    }
+}
+
+void Core::rosFinished()
+{
+    qDebug() << "ROS thread finished.";
+    exit(0);
+}
+
 void Core::printData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt)
 {
     printf("\r                                                                                                                                                         ");
@@ -217,7 +242,7 @@ void Core::printData(const QVector3D &accData, const QVector3D &gyroData, const 
 
 }
 
-void Core::printAngles(const QVector3D &angles)
+void Core::printAngles(const QVector3D &angles, const QVector3D &anglesVel)
 {
     printf("\r                                                                                                                                                         ");
     printf("\r  Roll =  %0.2f     Pitch = %0.2f     Yaw = %0.2f",angles.x()*180/M_PI, angles.y()*180/M_PI,angles.z()*180/M_PI);

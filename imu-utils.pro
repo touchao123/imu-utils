@@ -15,9 +15,9 @@ TEMPLATE = app
 target.path = /usr/bin/
 INSTALLS += target
 
-INCLUDEPATH += /home/timon/opt/rasp-pi-rootfs/opt/ros/groovy/include/
+INCLUDEPATH += /home/timon/opt/rasp-pi-rootfs/opt/ros/fuerte/include/
 
-LIBS += -L/home/timon/opt/rasp-pi-rootfs/opt/ros/groovy/lib/ \
+LIBS += -L/home/timon/opt/rasp-pi-rootfs/opt/ros/fuerte/lib/ \
         -lcpp_common\
         -lroslib \
         -lrospack \
@@ -35,8 +35,7 @@ SOURCES += main.cpp \
     dataprocessor.cpp \
     imusensorcalibrator.cpp \
     dcmfilter.cpp \
-    qnode.cpp \
-    rosodometrylistener.cpp
+    rosnode.cpp
 
 HEADERS += \
     core.h \
@@ -45,5 +44,4 @@ HEADERS += \
     dataprocessor.h \
     imusensorcalibrator.h \
     dcmfilter.h \
-    qnode.h \
-    rosodometrylistener.h
+    rosnode.h

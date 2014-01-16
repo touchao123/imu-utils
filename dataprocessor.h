@@ -37,7 +37,6 @@ private:
     // loads the saved calibration parameters from ~/.config/imu-utils.conf
     bool loadCalibrationParameters();
     void calibrateData(const QVector3D &accData, const QVector3D &gyroData, const QVector3D &magData, const int &dt);
-    void complementaryFilter();
     float toDeg(float rad);
     float toRad(float deg);
 
@@ -85,7 +84,7 @@ private:
 signals:
     void dataTcpReady(const QByteArray &data);
     void calibratedDataReady(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);
-    void anglesReady(const QVector3D & angles);
+    void anglesReady(const QVector3D & angles, const QVector3D & anglesVel);
 
 public slots:
     void processData(const QVector3D &accData,const QVector3D &gyroData, const QVector3D &magData, const int &dt);

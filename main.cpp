@@ -22,7 +22,6 @@
 #include <QStringList>
 #include <QDebug>
 #include <core.h>
-#include <rosodometrylistener.h>
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +31,7 @@ int main(int argc, char *argv[])
     if(arguments.contains("--help") || arguments.contains("-h")) {
         qDebug() << "Usage:" << arguments.first() << "[OPTION]...";
         qDebug() << "This application is able to read the IMU 9-DOF sensor stick";
-        qDebug() << "from Sparfunk SEN-10724. The sensor contiains:";
+        qDebug() << "from Sparkfun SEN-10724. The sensor contiains:";
         qDebug() << "   3-DOF accelerometer  -> ADXL345";
         qDebug() << "   3-DOF magnetometer   -> HMC5883L";
         qDebug() << "   3-DOF gyroscope      -> ITG-3200";
@@ -61,7 +60,6 @@ int main(int argc, char *argv[])
         qDebug() << "   -t,     --tcp               enable TCP Server to default port 55555";
         qDebug() << "   -p,     --port              specify the port for the TCP Server (49152 - 65535)";
         qDebug() << "   -r,     --ros               enable ROS node";
-        qDebug() << "   -T,     --topic             specify topic to subscribe the ROS node";
         qDebug();
         qDebug() << "examples:";
         qDebug() << "   - if we want to setup a TCP server that streams the data over default port 55555 with a frequency of 60 [Hz]:";
@@ -74,9 +72,6 @@ int main(int argc, char *argv[])
         qDebug();
         exit(0);
     }
-
-//    RosOdometryListener m_rosListener(argc,argv);
-//    m_rosListener.onInit("http://10.10.10.50:11311/","10.10.10.41");
 
     Core *core = new Core(arguments,argc,argv,0);
 

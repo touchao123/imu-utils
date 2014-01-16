@@ -34,7 +34,6 @@ ImuSensorCalibrator::ImuSensorCalibrator(ImuSensor *sensor, QObject *parent) :
     m_timer = new QTimer(this);
     m_input = new QTextStream(stdin);
     resetCalibration();
-
 }
 
 void ImuSensorCalibrator::calibrateAcc()
