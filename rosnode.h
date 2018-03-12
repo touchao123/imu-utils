@@ -5,12 +5,12 @@
 #include <QThread>
 #include <QMutex>
 
-#include <ros/ros.h>
-#include <ros/network.h>
+//#include <ros/ros.h>
+//#include <ros/network.h>
 #include <string>
 #include <sstream>
-#include <std_msgs/String.h>
-#include <nav_msgs/Odometry.h>
+//#include <std_msgs/String.h>
+//#include <nav_msgs/Odometry.h>
 
 class RosNode : public QThread
 {
@@ -29,7 +29,7 @@ private:
     QString m_masterURI;
     QString m_hostIP;
 
-    nav_msgs::Odometry m_odom;
+//    nav_msgs::Odometry m_odom;
 
     QMutex odomMutex;
 

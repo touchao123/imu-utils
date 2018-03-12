@@ -24,8 +24,8 @@
 #include <QTime>
 #include <stdlib.h>
 #include <unistd.h>
-#include <linux/i2c-dev.h>
-#include <sys/ioctl.h>
+//#include <linux/i2c-dev.h>
+//#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
@@ -90,22 +90,27 @@ ImuSensor::ImuSensor(QString deviceFile, int delay, QObject *parent) :
     m_timer->setInterval(m_delay);
     init();
 
+     m_qrandom =  new QRandomGenerator();
+
     connect(m_timer,SIGNAL(timeout()),this,SLOT(measure()));
 }
 
 void ImuSensor::init()
 {
     using namespace std;
+#if 0
     m_device = open(m_deviceFile.toLocal8Bit(),O_RDWR);
     if(m_device < 0){
         qDebug() << "ERROR: could not open" << m_deviceFile;
         qDebug() << "please check if the i2c modules are loaded (on Raspberry Pi: i2c_bcm2708, i2c-dev).";
         exit(1);
     }
+
     //qDebug() << m_deviceFile << "open.";
 
     // scanning for I2C-Sensors and safe the addresses of acc, gyr, mag
     detectDevices();
+#endif
     initAcc();
     initGyr();
     initMag();
@@ -118,6 +123,7 @@ void ImuSensor::detectDevices()
     qDebug() << "scanning for I2C devices on" << m_deviceFile << "...";
     qDebug() << "--------------------------------------------";
     QList<int> devices;
+#if 0
     for(int address = 0x3; address <= 0x77; address++){
         if(ioctl(m_device, I2C_SLAVE, address) < 0) {
             qDebug() << "ERROR: could not open address" << address;
@@ -152,6 +158,7 @@ void ImuSensor::detectDevices()
             qDebug() << "-----------------------------";
         }
     }
+#endif
     if(devices.isEmpty()){
         qDebug() << "ERROR: no imu-sensor devices found on " << m_deviceFile;
         exit(1);
@@ -167,6 +174,7 @@ QVector3D ImuSensor::readAcc()
 
     QVector3D vector;
 
+#if 0
     // set I/O controll to acc address
     ioctl(m_device, I2C_SLAVE, ACC_ADDRESS);
 
@@ -183,6 +191,10 @@ QVector3D ImuSensor::readAcc()
     vector.setX(float(toSignedInt(acc_data[0],16)));
     vector.setY(float(toSignedInt(acc_data[1],16)));
     vector.setZ(float(toSignedInt(acc_data[2],16)));
+#endif
+    vector.setX(m_qrandom->bounded(980));
+    vector.setY(m_qrandom->bounded(990));
+    vector.setZ(m_qrandom->bounded(988));
     //qDebug() << "Acc data: x= " << vector.x() << "y= " << vector.y() << "z= " <<  vector.z();
     return vector;
 }
@@ -192,9 +204,11 @@ QVector3D ImuSensor::readGyr()
     uchar bytes[6];
     memset(bytes,0,sizeof(bytes));
     int gyro_data[3];
+//    QRandomGenerator qrandom;
 
     QVector3D vector;
 
+#if 0
     // set I/O controll to acc address
     ioctl(m_device, I2C_SLAVE, GYRO_ADDRESS);
 
@@ -211,7 +225,16 @@ QVector3D ImuSensor::readGyr()
     vector.setX(float(toSignedInt(gyro_data[0],16))*(-1));
     vector.setY(float(toSignedInt(gyro_data[1],16))*(-1));
     vector.setZ(float(toSignedInt(gyro_data[2],16))*(-1));
-    //qDebug() << "Gyro data: x= " << gyro_data[0] << "y= " << gyro_data[1] << "z= " <<  gyro_data[2];
+#endif
+
+
+    vector.setX(m_qrandom->bounded(100.0));
+    vector.setY(m_qrandom->bounded(200.0));
+    vector.setZ(m_qrandom->bounded(300.0));
+
+//    qDebug() << "Gyro data: x= " << gyro_data[0] << "y= " << gyro_data[1] << "z= " <<  gyro_data[2];
+//    qDebug() << "Gyro data: x= " << vector.x() << "y= " <<vector.y() << "z= " <<  vector.z();
+
     return vector;
 }
 
@@ -224,6 +247,7 @@ QVector3D ImuSensor::readMag()
     QVector3D vector;
 
     // set I/O controll to acc address
+#if 0
     ioctl(m_device, I2C_SLAVE, MAG_ADDRESS);
 
     uint length = i2c_smbus_read_i2c_block_data(m_device,MAG_DATA_OUT_X_MSB_REG,6,bytes);
@@ -240,12 +264,17 @@ QVector3D ImuSensor::readMag()
     vector.setX(float(toSignedInt(mag_data[0],16)));
     vector.setY(float(toSignedInt(mag_data[1],16))*(-1));
     vector.setZ(float(toSignedInt(mag_data[2],16))*(-1));
+#endif
+    vector.setX(m_qrandom->bounded(100.0));
+    vector.setY(m_qrandom->bounded(200.0));
+    vector.setZ(m_qrandom->bounded(300.0));
     return vector;
 }
 
 
 bool ImuSensor::writeI2C(int address, uchar reg, uchar data)
 {
+#if 0
     if(ioctl(m_device, I2C_SLAVE, address)<0){
         qDebug() << "ERROR: could not open address" << address;
         return false;
@@ -256,6 +285,7 @@ bool ImuSensor::writeI2C(int address, uchar reg, uchar data)
         qDebug() << "ERROR: could not write to I2C";
         return false;
     }
+#endif
     return true;
 }
 
@@ -385,7 +415,7 @@ void ImuSensor::measure()
     QVector3D acc = readAcc();
     QVector3D gyr = readGyr();
     QVector3D mag = readMag();
-
+//qDebug()<<"faking data";
     // measeure time since last restart of time;
     int dt = time->elapsed();
     time->restart();

@@ -38,7 +38,6 @@ Core::Core(QStringList args, int argc, char **argv, QObject *parent) :
     setupTcpServer();
 
 
-
     // global connections
     connect(m_sensor,SIGNAL(sensorDataAvailable(QVector3D,QVector3D,QVector3D,int)),m_dataProcessor,SLOT(processData(QVector3D,QVector3D,QVector3D,int)));
 

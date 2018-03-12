@@ -73,7 +73,9 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    Core *core = new Core(arguments,argc,argv,0);
+//    Core *core = new Core(arguments,argc,argv,0);
+    char *hargs[] = {"imu-utils","-t","-vr"};
+    Core *core = new Core(arguments,sizeof(hargs)/sizeof(hargs[0]),hargs,0);
 
 
 

@@ -17,16 +17,7 @@ INSTALLS += target
 
 INCLUDEPATH += /home/timon/opt/rasp-pi-rootfs/opt/ros/fuerte/include/
 
-LIBS += -L/home/timon/opt/rasp-pi-rootfs/opt/ros/fuerte/lib/ \
-        -lcpp_common\
-        -lroslib \
-        -lrospack \
-        -lroscpp \
-        -lrosconsole \
-        -lrospack \
-        -lrostime \
-        -lxmlrpcpp \
-        -lroscpp_serialization
+#
 
 SOURCES += main.cpp \
     core.cpp \

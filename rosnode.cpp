@@ -9,11 +9,12 @@ RosNode::RosNode(QObject *parent, int argc, char **argv, const QString &name) :
 
 RosNode::~RosNode()
 {
-    ros::shutdown();
+//    ros::shutdown();
 }
 
 void RosNode::run()
 {
+#if 0
     ros::init(m_argc,m_argv,m_nodeName.toStdString());
 //    if (!ros::master::check()){
 //        qDebug() << "--------------------------------------------";
@@ -45,12 +46,24 @@ void RosNode::run()
         r.sleep();
     }
     ros::shutdown();
+#endif
+    while(1){
+        sleep(1);
+//        publishData();
+        QVector3D accVector;
+        QVector3D gyrVector;
+        QVector3D magVector;
+//        emit anglesReady(accVector,gyrVector)
+        qDebug()<<"looping...";
+
+    }
     return;
 }
 
 
 void RosNode::publishData(const QVector3D &angles, const QVector3D &anglesVel)
 {
+#if 0
     nav_msgs::Odometry odom;
 
     odom.header.frame_id = "odom";
@@ -74,4 +87,5 @@ void RosNode::publishData(const QVector3D &angles, const QVector3D &anglesVel)
     odomMutex.lock();
     m_odom = odom;
     odomMutex.unlock();
+#endif
 }

@@ -25,6 +25,7 @@
 #include <QString>
 #include <QTimer>
 #include <QVector3D>
+#include<QRandomGenerator>
 
 class ImuSensor : public QObject
 {
@@ -34,6 +35,7 @@ private:
     QTimer *m_timer;
     QTime *time;
 
+    QRandomGenerator *m_qrandom;
     int m_delay;
     float m_frequency;
     int m_device;
